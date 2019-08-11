@@ -4,6 +4,7 @@ require 'json'
 require 'resheet/request'
 require 'resheet/process/select'
 require 'resheet/process/find'
+require 'resheet/process/update'
 require 'resheet/process/delete'
 
 module Resheet; end
@@ -47,31 +48,9 @@ class Resheet::App
       return [201, { 'Content-Type' => 'application/json', 'Location' => "/#{request.resource}/#{new_record['id']}" }, []]
     end
 
-    if ['PUT', 'PATCH'].include?(request.method)
-      updating_record = data.find { |item| item['id'] == request.id }
-      if updating_record.nil?
-        return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{request.id} is not found\" }"]]
-      end
-
-      updating_row = data.index(updating_record) + 2 # Records start from the row no.2
-
-      updating_keys = header.reject { |key| key == 'id' }
-                            .reject { |key| request.params[key].nil? }
-
-      updating_keys.each do |key|
-        updating_record[key] = request.params[key]
-      end
-
-      update = Google::Apis::SheetsV4::ValueRange.new
-      update.range = "#{request.resource}!A#{updating_row}:Z#{updating_row}"
-      update.values = [updating_record.values]
-
-      service.update_spreadsheet_value(SHEET_ID, update.range, update, value_input_option: 'USER_ENTERED')
-
-      return [204, {}, []]
-    end
-
-    process = if request.method == 'DELETE'
+    process = if ['PUT', 'PATCH'].include?(request.method)
+      Resheet::Process::Update.new(service, SHEET_ID)
+    elsif request.method == 'DELETE'
       Resheet::Process::Delete.new(service, SHEET_ID)
     elsif request.id
       Resheet::Process::Find.new(service, SHEET_ID)
