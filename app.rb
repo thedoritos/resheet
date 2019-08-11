@@ -9,6 +9,10 @@ class App
     )
     credentials.fetch_access_token!
 
-    [200, { 'Content-Type' => 'application/json' }, ["{ \"credentials\": \"#{credentials.to_yaml}\" }"]]
+    service = Google::Apis::SheetsV4::SheetsService.new
+    service.authorization = credentials
+    values = service.get_spreadsheet_values(ENV['RESTFUL_SHEET_ID'], 'animations!A:Z').values
+
+    [200, { 'Content-Type' => 'application/json' }, ["{ \"values\": \"#{values}\" }"]]
   end
 end
