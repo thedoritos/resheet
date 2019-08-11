@@ -2,7 +2,7 @@ require 'googleauth'
 require 'google/apis/sheets_v4'
 require 'json'
 
-class App
+class Resheet::App
   SHEET_ID = ENV['RESTFUL_SHEET_ID']
 
   def call(env)
