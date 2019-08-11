@@ -2,6 +2,7 @@ require 'googleauth'
 require 'google/apis/sheets_v4'
 require 'json'
 require 'resheet/request'
+require 'resheet/process/select'
 
 module Resheet; end
 
@@ -105,8 +106,11 @@ class Resheet::App
       if data.nil?
         return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{request.id} is not found\" }"]]
       end
+
+      return [200, { 'Content-Type' => 'application/json' }, [JSON.generate(data)]]
     end
 
-    [200, { 'Content-Type' => 'application/json' }, [JSON.generate(data)]]
+    process = Resheet::Process::Select.new(service, SHEET_ID)
+    process.receive(request)
   end
 end
