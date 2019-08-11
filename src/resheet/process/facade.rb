@@ -1,6 +1,5 @@
 require 'resheet/process/create'
-require 'resheet/process/select'
-require 'resheet/process/find'
+require 'resheet/process/read'
 require 'resheet/process/update'
 require 'resheet/process/delete'
 
@@ -14,11 +13,7 @@ module Resheet::Process
     def receive(request)
       process = case request.method
       when 'GET'
-        if request.id
-          Resheet::Process::Find.new(@service, @spreadsheet_id)
-        else
-          Resheet::Process::Select.new(@service, @spreadsheet_id)
-        end
+        Resheet::Process::Read.new(@service, @spreadsheet_id)
       when 'POST'
         Resheet::Process::Create.new(@service, @spreadsheet_id)
       when 'PUT', 'PATCH'

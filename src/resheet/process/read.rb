@@ -1,5 +1,5 @@
 module Resheet::Process
-  class Find
+  class Read
     def initialize(sheet_service, spreadsheet_id)
       @service = sheet_service
       @spreadsheet_id = spreadsheet_id
@@ -18,12 +18,14 @@ module Resheet::Process
         header.each_with_index.map { |key, i| [key, row[i]] }.to_h
       end
 
-      data = data.find { |item| item['id'] == request.id }
-      if data.nil?
-        return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{request.id} is not found\" }"]]
+      if request.id
+        data = data.find { |item| item['id'] == request.id }
+        if data.nil?
+          return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{request.id} is not found\" }"]]
+        end
       end
 
-      return [200, { 'Content-Type' => 'application/json' }, [JSON.generate(data)]]
+      [200, { 'Content-Type' => 'application/json' }, [JSON.generate(data)]]
     end
   end
 end
