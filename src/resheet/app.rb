@@ -4,6 +4,7 @@ require 'json'
 require 'resheet/request'
 require 'resheet/process/select'
 require 'resheet/process/find'
+require 'resheet/process/delete'
 
 module Resheet; end
 
@@ -70,39 +71,9 @@ class Resheet::App
       return [204, {}, []]
     end
 
-    if request.method == 'DELETE'
-      deleting_record = data.find { |item| item['id'] == request.id }
-      if deleting_record.nil?
-        return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{request.id} is not found\" }"]]
-      end
-
-      sheet = service.get_spreadsheet(SHEET_ID).sheets.find { |sheet| sheet.properties.title == request.resource }
-      if sheet.nil?
-        return [500, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Sheet with title=#{request.resource} is not found\" }"]]
-      end
-
-      deleting_row = data.index(deleting_record) + 1 # Records start from the row index 1
-
-      delete = Google::Apis::SheetsV4::Request.new({
-        delete_dimension: {
-          range: {
-            sheet_id: sheet.properties.sheet_id,
-            dimension: "ROWS",
-            start_index: deleting_row,
-            end_index: deleting_row + 1
-          }
-        }
-      })
-
-      batch = Google::Apis::SheetsV4::BatchUpdateSpreadsheetRequest.new
-      batch.requests = [delete]
-
-      service.batch_update_spreadsheet(SHEET_ID, batch)
-
-      return [204, {}, []]
-    end
-
-    process = if request.id
+    process = if request.method == 'DELETE'
+      Resheet::Process::Delete.new(service, SHEET_ID)
+    elsif request.id
       Resheet::Process::Find.new(service, SHEET_ID)
     else
       Resheet::Process::Select.new(service, SHEET_ID)
