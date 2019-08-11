@@ -16,4 +16,11 @@ class HomepageTest < Test::Unit::TestCase
     assert last_response.ok?
     assert_equal last_response.body, '[{"id":"1","title":"SHIROBAKO"}]'
   end
+
+  def test_find_resource_by_id
+    get '/animations/1'
+
+    assert last_response.ok?
+    assert_equal last_response.body, '{"id":"1","title":"SHIROBAKO"}'
+  end
 end
