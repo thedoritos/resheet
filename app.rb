@@ -28,6 +28,14 @@ class App
       header.each_with_index.map { |key, i| [key, row[i]] }.to_h
     end
 
+    if path_components[1]
+      id = path_components[1]
+      data = data.find { |item| item['id'] == id }
+      if data.nil?
+        return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{id} is not found\" }"]]
+      end
+    end
+
     [200, { 'Content-Type' => 'application/json' }, [JSON.generate(data)]]
   end
 end
