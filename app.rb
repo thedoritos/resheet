@@ -10,9 +10,17 @@ class App
     )
     credentials.fetch_access_token!
 
+    request = Rack::Request.new(env)
+    path_components = request.path_info.split('/').drop(1)
+    resource = path_components[0]
+
     service = Google::Apis::SheetsV4::SheetsService.new
     service.authorization = credentials
-    values = service.get_spreadsheet_values(ENV['RESTFUL_SHEET_ID'], 'animations!A:Z').values
+    begin
+      values = service.get_spreadsheet_values(ENV['RESTFUL_SHEET_ID'], "#{resource}!A:Z").values
+    rescue Google::Apis::ClientError => error
+      return [500, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"#{error.class}: #{error}\" }"]]
+    end
 
     header = values[0]
     rows = values.drop(1)
