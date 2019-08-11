@@ -1,6 +1,7 @@
 require 'googleauth'
 require 'google/apis/sheets_v4'
 require 'json'
+require 'resheet/request'
 
 module Resheet; end
 
@@ -14,14 +15,12 @@ class Resheet::App
     )
     credentials.fetch_access_token!
 
-    request = Rack::Request.new(env)
-    path_components = request.path_info.split('/').drop(1)
-    resource = path_components[0]
+    request = Resheet::Request.new(env)
 
     service = Google::Apis::SheetsV4::SheetsService.new
     service.authorization = credentials
     begin
-      values = service.get_spreadsheet_values(SHEET_ID, "#{resource}!A:Z").values
+      values = service.get_spreadsheet_values(SHEET_ID, "#{request.resource}!A:Z").values
     rescue Google::Apis::ClientError => error
       return [500, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"#{error.class}: #{error}\" }"]]
     end
@@ -32,24 +31,23 @@ class Resheet::App
       header.each_with_index.map { |key, i| [key, row[i]] }.to_h
     end
 
-    if request.request_method == 'POST'
+    if request.method == 'POST'
       new_record = header.map { |key| [key, request.params[key]] }.to_h
       new_record['id'] = data.map { |item| item['id'].to_i }.max + 1
 
       update = Google::Apis::SheetsV4::ValueRange.new
-      update.range = "#{resource}!A:Z"
+      update.range = "#{request.resource}!A:Z"
       update.values = [new_record.values]
 
       service.append_spreadsheet_value(SHEET_ID, update.range, update, value_input_option: "USER_ENTERED")
 
-      return [201, { 'Content-Type' => 'application/json', 'Location' => "/#{resource}/#{new_record['id']}" }, []]
+      return [201, { 'Content-Type' => 'application/json', 'Location' => "/#{request.resource}/#{new_record['id']}" }, []]
     end
 
-    if ['PUT', 'PATCH'].include?(request.request_method)
-      id = path_components[1] || request.params['id']
-      updating_record = data.find { |item| item['id'] == id }
+    if ['PUT', 'PATCH'].include?(request.method)
+      updating_record = data.find { |item| item['id'] == request.id }
       if updating_record.nil?
-        return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{id} is not found\" }"]]
+        return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{request.id} is not found\" }"]]
       end
 
       updating_row = data.index(updating_record) + 2 # Records start from the row no.2
@@ -62,7 +60,7 @@ class Resheet::App
       end
 
       update = Google::Apis::SheetsV4::ValueRange.new
-      update.range = "#{resource}!A#{updating_row}:Z#{updating_row}"
+      update.range = "#{request.resource}!A#{updating_row}:Z#{updating_row}"
       update.values = [updating_record.values]
 
       service.update_spreadsheet_value(SHEET_ID, update.range, update, value_input_option: 'USER_ENTERED')
@@ -70,16 +68,15 @@ class Resheet::App
       return [204, {}, []]
     end
 
-    if request.request_method == 'DELETE'
-      id = path_components[1] || request.params['id']
-      deleting_record = data.find { |item| item['id'] == id }
+    if request.method == 'DELETE'
+      deleting_record = data.find { |item| item['id'] == request.id }
       if deleting_record.nil?
-        return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{id} is not found\" }"]]
+        return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{request.id} is not found\" }"]]
       end
 
-      sheet = service.get_spreadsheet(SHEET_ID).sheets.find { |sheet| sheet.properties.title == resource }
+      sheet = service.get_spreadsheet(SHEET_ID).sheets.find { |sheet| sheet.properties.title == request.resource }
       if sheet.nil?
-        return [500, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Sheet with title=#{resource} is not found\" }"]]
+        return [500, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Sheet with title=#{request.resource} is not found\" }"]]
       end
 
       deleting_row = data.index(deleting_record) + 1 # Records start from the row index 1
@@ -103,11 +100,10 @@ class Resheet::App
       return [204, {}, []]
     end
 
-    if path_components[1]
-      id = path_components[1]
-      data = data.find { |item| item['id'] == id }
+    if request.id
+      data = data.find { |item| item['id'] == request.id }
       if data.nil?
-        return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{id} is not found\" }"]]
+        return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{request.id} is not found\" }"]]
       end
     end
 
