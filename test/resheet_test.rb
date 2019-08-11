@@ -20,6 +20,7 @@ class HomepageTest < Test::Unit::TestCase
   end
 
   def teardown
+    patch  '/animations/1', { title: 'SHIROBAKO' }, {}
     delete '/animations/2'
   end
 
@@ -48,5 +49,15 @@ class HomepageTest < Test::Unit::TestCase
 
     assert last_response.ok?
     assert_equal last_response.body, '{"id":"2","title":"Charlotte"}'
+  end
+
+  def test_update_resource
+    params = { title: 'Sakura Quest' }
+    patch '/animations/1', params, {}
+
+    assert last_response.no_content?
+
+    get '/animations/1'
+    assert_equal last_response.body, '{"id":"1","title":"Sakura Quest"}'
   end
 end
