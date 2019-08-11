@@ -60,4 +60,19 @@ class HomepageTest < Test::Unit::TestCase
     get '/animations/1'
     assert_equal last_response.body, '{"id":"1","title":"Sakura Quest"}'
   end
+
+  def test_delete_resource
+    params = { title: 'Hanasaku Iroha' }
+    post '/animations', params, {}
+    url = last_response.header['Location']
+
+    get url
+    assert last_response.ok?
+
+    delete url
+    assert last_response.no_content?
+
+    get url
+    assert last_response.not_found?
+  end
 end
