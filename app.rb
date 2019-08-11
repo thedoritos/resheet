@@ -43,6 +43,31 @@ class App
       return [201, { 'Content-Type' => 'application/json', 'Location' => "/#{resource}/#{new_record['id']}" }, []]
     end
 
+    if ['PUT', 'PATCH'].include?(request.request_method)
+      id = request.params['id']
+      updating_record = data.find { |item| item['id'] == id }
+      if updating_record.nil?
+        return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{id} is not found\" }"]]
+      end
+
+      updating_row = data.index(updating_record) + 2 # Records start from the row no.2
+
+      updating_keys = header.reject { |key| key == 'id' }
+                            .reject { |key| request.params[key].nil? }
+
+      updating_keys.each do |key|
+        updating_record[key] = request.params[key]
+      end
+
+      update = Google::Apis::SheetsV4::ValueRange.new
+      update.range = "#{resource}!A#{updating_row}:Z#{updating_row}"
+      update.values = [updating_record.values]
+
+      service.update_spreadsheet_value(SHEET_ID, update.range, update, value_input_option: 'USER_ENTERED')
+
+      return [204, {}, []]
+    end
+
     if path_components[1]
       id = path_components[1]
       data = data.find { |item| item['id'] == id }
