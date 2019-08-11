@@ -68,6 +68,39 @@ class App
       return [204, {}, []]
     end
 
+    if request.request_method == 'DELETE'
+      id = request.params['id']
+      deleting_record = data.find { |item| item['id'] == id }
+      if deleting_record.nil?
+        return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{id} is not found\" }"]]
+      end
+
+      sheet = service.get_spreadsheet(SHEET_ID).sheets.find { |sheet| sheet.properties.title == resource }
+      if sheet.nil?
+        return [500, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Sheet with title=#{resource} is not found\" }"]]
+      end
+
+      deleting_row = data.index(deleting_record) + 1 # Records start from the row index 1
+
+      delete = Google::Apis::SheetsV4::Request.new({
+        delete_dimension: {
+          range: {
+            sheet_id: sheet.properties.sheet_id,
+            dimension: "ROWS",
+            start_index: deleting_row,
+            end_index: deleting_row + 1
+          }
+        }
+      })
+
+      batch = Google::Apis::SheetsV4::BatchUpdateSpreadsheetRequest.new
+      batch.requests = [delete]
+
+      service.batch_update_spreadsheet(SHEET_ID, batch)
+
+      return [204, {}, []]
+    end
+
     if path_components[1]
       id = path_components[1]
       data = data.find { |item| item['id'] == id }
