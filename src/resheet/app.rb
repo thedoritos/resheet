@@ -2,6 +2,8 @@ require 'googleauth'
 require 'google/apis/sheets_v4'
 require 'json'
 
+module Resheet; end
+
 class Resheet::App
   SHEET_ID = ENV['RESTFUL_SHEET_ID']
 
