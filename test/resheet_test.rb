@@ -39,9 +39,14 @@ class HomepageTest < Test::Unit::TestCase
 
   def test_create_resource
     params = { title: "Charlotte" }
-    post '/animations', json(params), header
+    post '/animations', params, {}
 
     assert last_response.created?
     assert_equal last_response.header['Location'], '/animations/2'
+
+    get '/animations/2'
+
+    assert last_response.ok?
+    assert_equal last_response.body, '{"id":"2","title":"Charlotte"}'
   end
 end
