@@ -44,7 +44,7 @@ class App
     end
 
     if ['PUT', 'PATCH'].include?(request.request_method)
-      id = request.params['id']
+      id = path_components[1] || request.params['id']
       updating_record = data.find { |item| item['id'] == id }
       if updating_record.nil?
         return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{id} is not found\" }"]]
@@ -69,7 +69,7 @@ class App
     end
 
     if request.request_method == 'DELETE'
-      id = request.params['id']
+      id = path_components[1] || request.params['id']
       deleting_record = data.find { |item| item['id'] == id }
       if deleting_record.nil?
         return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{id} is not found\" }"]]
