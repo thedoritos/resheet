@@ -27,5 +27,9 @@ module Resheet
       record['id'] = @data.map { |item| item['id'].to_i }.max + 1
       record
     end
+
+    def find_record(id)
+      @data.find { |item| item['id'] == id }
+    end
   end
 end
