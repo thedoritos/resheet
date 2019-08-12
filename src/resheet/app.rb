@@ -2,26 +2,25 @@ require 'googleauth'
 require 'google/apis/sheets_v4'
 require 'json'
 require 'resheet/request'
-require 'resheet/process/facade'
+require 'resheet/router'
 
-module Resheet; end
+module Resheet
+  class App
+    def call(env)
+      credentials = Google::Auth::ServiceAccountCredentials.make_creds(
+        json_key_io: File.open('credentials.json'),
+        scope: Google::Apis::SheetsV4::AUTH_SPREADSHEETS
+      )
+      credentials.fetch_access_token!
 
-class Resheet::App
-  SHEET_ID = ENV['RESTFUL_SHEET_ID']
+      service = Google::Apis::SheetsV4::SheetsService.new
+      service.authorization = credentials
 
-  def call(env)
-    credentials = Google::Auth::ServiceAccountCredentials.make_creds(
-      json_key_io: File.open('credentials.json'),
-      scope: Google::Apis::SheetsV4::AUTH_SPREADSHEETS
-    )
-    credentials.fetch_access_token!
+      router = Resheet::Router.new(service, ENV['RESHEET_SPREADSHEET_ID'])
+      request = Resheet::Request.new(env)
+      response = router.route(request)
 
-    service = Google::Apis::SheetsV4::SheetsService.new
-    service.authorization = credentials
-
-    request = Resheet::Request.new(env)
-
-    process = Resheet::Process::Facade.new(service, SHEET_ID)
-    process.receive(request)
+      return response.rack_response
+    end
   end
 end
