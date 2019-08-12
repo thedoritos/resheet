@@ -1,11 +1,11 @@
-module Resheet::Process
+module Resheet::Action
   class Update
     def initialize(sheet_service, spreadsheet_id)
       @service = sheet_service
       @spreadsheet_id = spreadsheet_id
     end
 
-    def receive(request)
+    def invoke(request)
       begin
         values = @service.get_spreadsheet_values(@spreadsheet_id, "#{request.resource}!A:Z").values
       rescue Google::Apis::ClientError => error

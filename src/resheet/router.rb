@@ -1,7 +1,7 @@
-require 'resheet/process/create'
-require 'resheet/process/read'
-require 'resheet/process/update'
-require 'resheet/process/delete'
+require 'resheet/action/read'
+require 'resheet/action/create'
+require 'resheet/action/update'
+require 'resheet/action/delete'
 require 'resheet/response'
 
 module Resheet
@@ -12,18 +12,18 @@ module Resheet
     end
 
     def route(request)
-      process = case request.method
+      action = case request.method
       when 'GET'
-        Resheet::Process::Read.new(@sheets_service, @spreadsheet_id)
+        Resheet::Action::Read.new(@sheets_service, @spreadsheet_id)
       when 'POST'
-        Resheet::Process::Create.new(@sheets_service, @spreadsheet_id)
+        Resheet::Action::Create.new(@sheets_service, @spreadsheet_id)
       when 'PUT', 'PATCH'
-        Resheet::Process::Update.new(@sheets_service, @spreadsheet_id)
+        Resheet::Action::Update.new(@sheets_service, @spreadsheet_id)
       when 'DELETE'
-        Resheet::Process::Delete.new(@sheets_service, @spreadsheet_id)
+        Resheet::Action::Delete.new(@sheets_service, @spreadsheet_id)
       end
 
-      Resheet::Response.new(process&.receive(request))
+      Resheet::Response.new(action&.invoke(request))
     end
   end
 end
