@@ -28,8 +28,22 @@ module Resheet
       record
     end
 
+    def updated_record(params)
+      record = find_record(params['id'])
+      return nil if record.nil?
+
+      safe_keys = @header.reject { |key| key == 'id' }
+                         .reject { |key| params[key].nil? }
+
+      record.merge(params.select { |key, value| safe_keys.include?(key) })
+    end
+
     def find_record(id)
       @data.find { |item| item['id'] == id }
+    end
+
+    def row_number_of(record)
+      @data.index(record) + 2
     end
   end
 end
