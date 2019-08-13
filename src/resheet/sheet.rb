@@ -32,10 +32,12 @@ module Resheet
       record = find_record(params['id'])
       return nil if record.nil?
 
-      safe_keys = @header.reject { |key| key == 'id' }
-                         .reject { |key| params[key].nil? }
+      safe_params = params.select do |key, value|
+        next false if key == 'id'
+        @header.include?(key)
+      end
 
-      record.merge(params.select { |key, value| safe_keys.include?(key) })
+      record.merge(safe_params)
     end
 
     def find_record(id)
