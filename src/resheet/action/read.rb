@@ -19,7 +19,7 @@ module Resheet::Action
         return Resheet::RecordResponse.new(record)
       end
 
-      Resheet::RecordResponse.new(sheet.data)
+      Resheet::RecordResponse.new(sheet.records)
     end
   end
 end

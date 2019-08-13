@@ -1,7 +1,7 @@
 module Resheet
   class Sheet
     attr_reader :error
-    attr_reader :header, :rows, :data
+    attr_reader :header, :rows, :records
 
     def initialize(sheets_service, spreadsheet_id, resource)
       @sheets_service = sheets_service
@@ -14,7 +14,7 @@ module Resheet
         values = @sheets_service.get_spreadsheet_values(@spreadsheet_id, "#{@resource}!A:Z").values
         @header = values[0]
         @rows = values.drop(1)
-        @data = @rows.map do |row|
+        @records = @rows.map do |row|
           @header.each_with_index.map { |key, i| [key, row[i]] }.to_h
         end
       rescue Google::Apis::ClientError => error
@@ -24,7 +24,7 @@ module Resheet
 
     def new_record(params)
       record = @header.map { |key| [key, params[key]] }.to_h
-      record['id'] = (@data.map { |item| item['id'].to_i }.max || 0) + 1
+      record['id'] = (@records.map { |item| item['id'].to_i }.max || 0) + 1
       record
     end
 
@@ -39,11 +39,11 @@ module Resheet
     end
 
     def find_record(id)
-      @data.find { |item| item['id'] == id }
+      @records.find { |item| item['id'] == id }
     end
 
     def row_number_of(record)
-      @data.index(record) + 2
+      @records.index(record) + 2
     end
   end
 end
