@@ -22,7 +22,7 @@ module Resheet
     end
 
     def to_rack
-      [500, json_header, ["{ \"error\": \"#{@error}\" }"]]
+      [500, json_header, [JSON.generate({ error: @error.to_s })]]
     end
   end
 
