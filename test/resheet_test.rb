@@ -19,9 +19,14 @@ class HomepageTest < Test::Unit::TestCase
     JSON.generate(params)
   end
 
+  def setup
+    post '/animations', { title: 'SHIROBAKO' }, {}
+  end
+
   def teardown
-    patch  '/animations/1', { title: 'SHIROBAKO' }, {}
+    delete '/animations/1'
     delete '/animations/2'
+    delete '/animations/3'
   end
 
   def test_select_resource
@@ -74,5 +79,12 @@ class HomepageTest < Test::Unit::TestCase
 
     get url
     assert last_response.not_found?
+  end
+
+  def test_error_when_sheet_is_not_found
+    get '/null'
+
+    assert last_response.server_error?
+    assert_equal '{ "error": "badRequest: Unable to parse range: null!A:Z" }', last_response.body
   end
 end
