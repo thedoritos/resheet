@@ -13,15 +13,15 @@ module Resheet::Action
 
       return Resheet::ServerErrorResponse.new(sheet.error) if sheet.error
 
-      updating_record = sheet.find_record(request.id)
+      record = sheet.find_record(request.id)
       return Resheet::ErrorResponse.new(404, "Record with id=#{request.id} is not found") if updating_record.nil?
 
-      updating_row = sheet.row_number_of(updating_record)
-      updating_record = sheet.updated_record(request.params)
+      row = sheet.row_number_of(record)
+      record = sheet.updated_record(request.params)
 
       update = Google::Apis::SheetsV4::ValueRange.new
-      update.range = "#{request.resource}!A#{updating_row}:Z#{updating_row}"
-      update.values = [updating_record.values]
+      update.range = "#{request.resource}!A#{row}:Z#{row}"
+      update.values = [record.values]
 
       @sheets_service.update_spreadsheet_value(@spreadsheet_id, update.range, update, value_input_option: 'USER_ENTERED')
 

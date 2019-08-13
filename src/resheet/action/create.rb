@@ -14,15 +14,15 @@ module Resheet::Action
 
       return Resheet::ServerErrorResponse.new(sheet.error) if sheet.error
 
-      new_record = sheet.new_record(request.params)
+      record = sheet.new_record(request.params)
 
       update = Google::Apis::SheetsV4::ValueRange.new
       update.range = "#{request.resource}!A:Z"
-      update.values = [new_record.values]
+      update.values = [record.values]
 
       @sheets_service.append_spreadsheet_value(@spreadsheet_id, update.range, update, value_input_option: "USER_ENTERED")
 
-      return Resheet::NewRecordResponse.new(request.resource, new_record)
+      return Resheet::NewRecordResponse.new(request.resource, record)
     end
   end
 end
