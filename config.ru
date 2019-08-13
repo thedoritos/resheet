@@ -1,5 +1,5 @@
-$:.unshift File.dirname(__FILE__)
+$:.unshift File.join(File.dirname(__FILE__), 'src')
 
-require 'app'
+require 'resheet/app'
 
-run App.new
+run Resheet::App.new
