@@ -24,7 +24,7 @@ module Resheet
 
     def new_record(params)
       record = @header.map { |key| [key, params[key]] }.to_h
-      record['id'] = @data.map { |item| item['id'].to_i }.max + 1
+      record['id'] = (@data.map { |item| item['id'].to_i }.max || 0) + 1
       record
     end
 
