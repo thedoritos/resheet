@@ -85,7 +85,7 @@ class HomepageTest < Test::Unit::TestCase
     get '/null'
 
     assert last_response.server_error?
-    assert_equal '{ "error": "badRequest: Unable to parse range: null!A:Z" }', last_response.body
+    assert_equal '{"error":"badRequest: Unable to parse range: null!A:Z"}', last_response.body
   end
 
   def test_error_when_record_to_find_is_not_found
