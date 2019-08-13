@@ -4,7 +4,7 @@ require "json"
 
 OUTER_APP = Rack::Builder.parse_file('config.ru').first
 
-class HomepageTest < Test::Unit::TestCase
+class ResheetTest < Test::Unit::TestCase
   include Rack::Test::Methods
 
   def app
