@@ -1,3 +1,5 @@
+require 'resheet/response'
+
 module Resheet::Action
   class Delete
     def initialize(sheets_service, spreadsheet_id)
@@ -9,19 +11,13 @@ module Resheet::Action
       sheet = Resheet::Sheet.new(@sheets_service, @spreadsheet_id, request.resource)
       sheet.fetch
 
-      if sheet.error
-        return [500, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"#{sheet.error.class}: #{sheet.error}\" }"]]
-      end
+      return Resheet::ErrorResponse.new(500, "#{sheet.error.class}: #{sheet.error}") if sheet.error
 
       deleting_record = sheet.find_record(request.id)
-      if deleting_record.nil?
-        return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{request.id} is not found\" }"]]
-      end
+      return Resheet::ErrorResponse.new(404, "Record with id=#{request.id} is not found") if deleting_record.nil?
 
       gsheet = @sheets_service.get_spreadsheet(@spreadsheet_id).sheets.find { |gsheet| gsheet.properties.title == request.resource }
-      if gsheet.nil?
-        return [500, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Sheet with title=#{request.resource} is not found\" }"]]
-      end
+      return Resheet::ErrorResponse.new(500, "Sheet with title=#{request.resource} is not found") if gsheet.nil?
 
       deleting_row = sheet.row_number_of(deleting_record)
 
@@ -41,7 +37,7 @@ module Resheet::Action
 
       @sheets_service.batch_update_spreadsheet(@spreadsheet_id, batch)
 
-      return [204, {}, []]
+      return Resheet::NoContentResponse.new
     end
   end
 end

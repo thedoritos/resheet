@@ -20,7 +20,7 @@ module Resheet
       request = Resheet::Request.new(env)
       response = router.route(request)
 
-      return response.rack_response
+      return response.to_rack
     end
   end
 end

@@ -1,3 +1,4 @@
+require 'resheet/response'
 require 'resheet/sheet'
 
 module Resheet::Action
@@ -11,9 +12,7 @@ module Resheet::Action
       sheet = Resheet::Sheet.new(@sheets_service, @spreadsheet_id, request.resource)
       sheet.fetch
 
-      if sheet.error
-        return [500, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"#{sheet.error.class}: #{sheet.error}\" }"]]
-      end
+      return Resheet::ErrorResponse.new(500, "#{sheet.error.class}: #{sheet.error}") if sheet.error
 
       new_record = sheet.new_record(request.params)
 
@@ -23,7 +22,7 @@ module Resheet::Action
 
       @sheets_service.append_spreadsheet_value(@spreadsheet_id, update.range, update, value_input_option: "USER_ENTERED")
 
-      return [201, { 'Content-Type' => 'application/json', 'Location' => "/#{request.resource}/#{new_record['id']}" }, []]
+      return Resheet::NewRecordResponse.new(request.resource, new_record)
     end
   end
 end

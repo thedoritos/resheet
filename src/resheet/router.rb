@@ -23,7 +23,7 @@ module Resheet
         Resheet::Action::Delete.new(@sheets_service, @spreadsheet_id)
       end
 
-      Resheet::Response.new(action&.invoke(request))
+      action&.invoke(request)
     end
   end
 end

@@ -1,3 +1,5 @@
+require 'resheet/response'
+
 module Resheet::Action
   class Read
     def initialize(sheets_service, spreadsheet_id)
@@ -9,20 +11,15 @@ module Resheet::Action
       sheet = Resheet::Sheet.new(@sheets_service, @spreadsheet_id, request.resource)
       sheet.fetch
 
-      if sheet.error
-        return [500, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"#{sheet.error.class}: #{sheet.error}\" }"]]
-      end
+      return Resheet::ErrorResponse.new(500, "#{sheet.error.class}: #{sheet.error}") if sheet.error
 
       if request.id
         record = sheet.find_record(request.id)
-        if record.nil?
-          return [404, { 'Content-Type' => 'application/json' }, ["{ \"error\": \"Object with id=#{request.id} is not found\" }"]]
-        end
-
-        return [200, { 'Content-Type' => 'application/json' }, [JSON.generate(record)]]
+        return Resheet::ErrorResponse.new(404, "Record with id=#{request.id} is not found") if record.nil?
+        return Resheet::RecordResponse.new(record)
       end
 
-      [200, { 'Content-Type' => 'application/json' }, [JSON.generate(sheet.data)]]
+      Resheet::RecordResponse.new(sheet.data)
     end
   end
 end
