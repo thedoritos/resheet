@@ -16,6 +16,16 @@ module Resheet
     end
   end
 
+  class ServerErrorResponse < Response
+    def initialize(error)
+      @error = error
+    end
+
+    def to_rack
+      [500, json_header, ["{ \"error\": \"#{@error}\" }"]]
+    end
+  end
+
   class NoContentResponse < Response
     def to_rack
       [204, {}, []]

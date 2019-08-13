@@ -12,7 +12,7 @@ module Resheet::Action
       sheet = Resheet::Sheet.new(@sheets_service, @spreadsheet_id, request.resource)
       sheet.fetch
 
-      return Resheet::ErrorResponse.new(500, "#{sheet.error.class}: #{sheet.error}") if sheet.error
+      return Resheet::ServerErrorResponse.new(sheet.error) if sheet.error
 
       new_record = sheet.new_record(request.params)
 
