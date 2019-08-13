@@ -15,7 +15,7 @@ module Resheet::Action
 
       if request.id
         record = sheet.find_record(request.id)
-        return Resheet::ErrorResponse.new(404, "Record with id=#{request.id} is not found") if record.nil?
+        return Resheet::RecordNotFoundResponse.new({ id: request.id }) if record.nil?
         return Resheet::RecordResponse.new(record)
       end
 

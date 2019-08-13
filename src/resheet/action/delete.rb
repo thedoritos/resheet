@@ -14,7 +14,7 @@ module Resheet::Action
       return Resheet::ServerErrorResponse.new(sheet.error) if sheet.error
 
       record = sheet.find_record(request.id)
-      return Resheet::ErrorResponse.new(404, "Record with id=#{request.id} is not found") if deleting_record.nil?
+      return Resheet::RecordNotFoundResponse.new({ id: request.id }) if record.nil?
 
       gsheet = @sheets_service.get_spreadsheet(@spreadsheet_id).sheets.find { |gsheet| gsheet.properties.title == request.resource }
       return Resheet::ErrorResponse.new(500, "Sheet with title=#{request.resource} is not found") if gsheet.nil?

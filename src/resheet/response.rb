@@ -12,7 +12,7 @@ module Resheet
     end
 
     def to_rack
-      [@status_code, json_header, ["{ \"error\": \"#{@error_message}\" }"]]
+      [@status_code, json_header, [JSON.generate({ error: @error_message })]]
     end
   end
 
@@ -23,6 +23,17 @@ module Resheet
 
     def to_rack
       [500, json_header, ["{ \"error\": \"#{@error}\" }"]]
+    end
+  end
+
+  class RecordNotFoundResponse < Response
+    def initialize(condition)
+      @condition = condition
+    end
+
+    def to_rack
+      condition_str = @condition.map { |key, value| "#{key}=#{value}" }.join('&')
+      [404, json_header, [JSON.generate({ error: "Record with #{condition_str} is not found" })]]
     end
   end
 

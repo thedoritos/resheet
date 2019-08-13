@@ -14,7 +14,7 @@ module Resheet::Action
       return Resheet::ServerErrorResponse.new(sheet.error) if sheet.error
 
       record = sheet.find_record(request.id)
-      return Resheet::ErrorResponse.new(404, "Record with id=#{request.id} is not found") if updating_record.nil?
+      return Resheet::RecordNotFoundResponse.new({ id: request.id }) if record.nil?
 
       row = sheet.row_number_of(record)
       record = sheet.updated_record(request.params)
