@@ -87,4 +87,25 @@ class HomepageTest < Test::Unit::TestCase
     assert last_response.server_error?
     assert_equal '{ "error": "badRequest: Unable to parse range: null!A:Z" }', last_response.body
   end
+
+  def test_error_when_record_to_find_is_not_found
+    get '/animations/100'
+
+    assert last_response.client_error?
+    assert_equal '{"error":"Record with id=100 is not found"}', last_response.body
+  end
+
+  def test_error_when_record_to_update_is_not_found
+    patch '/animations/100', { title: 'Glasslip' }
+
+    assert last_response.client_error?
+    assert_equal '{"error":"Record with id=100 is not found"}', last_response.body
+  end
+
+  def test_error_when_record_to_delete_is_not_found
+    delete '/animations/100'
+
+    assert last_response.client_error?
+    assert_equal '{"error":"Record with id=100 is not found"}', last_response.body
+  end
 end
