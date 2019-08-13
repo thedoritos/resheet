@@ -2,7 +2,6 @@ require 'resheet/action/read'
 require 'resheet/action/create'
 require 'resheet/action/update'
 require 'resheet/action/delete'
-require 'resheet/response'
 
 module Resheet
   class Router

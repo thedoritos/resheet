@@ -1,4 +1,5 @@
 require 'resheet/response'
+require 'resheet/sheet'
 
 module Resheet::Action
   class Update
