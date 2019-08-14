@@ -8,7 +8,7 @@ module Resheet
   class App
     def call(env)
       credentials = Google::Auth::ServiceAccountCredentials.make_creds(
-        json_key_io: File.open('credentials.json'),
+        json_key_io: File.open('secrets/credentials.json'),
         scope: Google::Apis::SheetsV4::AUTH_SPREADSHEETS
       )
       credentials.fetch_access_token!
