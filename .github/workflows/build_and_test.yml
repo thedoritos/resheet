@@ -1,0 +1,25 @@
+name: Build and Test
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+    - name: Set up Ruby 2.6
+      uses: actions/setup-ruby@v1
+      with:
+        version: 2.6.x
+    - name: Set up environment
+      run: |
+        mkdir -p ./secrets
+        gpg -q --batch --yes --decrypt --passphrase="${{ secrets.TEST_PASSPHRASE }}" -o ./secrets/credentials.json ./test/files/resheet-test.gpg
+    - name: Build and test
+      env:
+        RESHEET_SPREADSHEET_ID: ${{ secrets.TEST_SPREADSHEET_ID }}
+      run: |
+        gem install bundler
+        bundle install --jobs 4 --retry 3
+        bundle exec ruby test/resheet_test.rb
