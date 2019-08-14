@@ -30,4 +30,4 @@ Using Google Sheet has following benefits.
 1. Define environment variables.
     - `RESHEET_SPREADSHEET_ID` : The ID of the spreadsheet
     - `RESHEET_CREDENTIALS` : The access key
-    - `RESHEET_API_KEY` : TODO
+    - `RESHEET_API_KEY` (Optional) : Set key you like if you want to authenticate API with a key
