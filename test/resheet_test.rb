@@ -11,7 +11,7 @@ class ResheetTest < Test::Unit::TestCase
     OUTER_APP
   end
 
-  def header
+  def json_header
     { 'CONTENT_TYPE' => 'application/json' }
   end
 
@@ -20,6 +20,7 @@ class ResheetTest < Test::Unit::TestCase
   end
 
   def setup
+    ENV['RESHEET_API_KEY'] = nil
     post '/animations', { title: 'SHIROBAKO' }, {}
   end
 
@@ -107,5 +108,26 @@ class ResheetTest < Test::Unit::TestCase
 
     assert last_response.client_error?
     assert_equal '{"error":"Record with id=100 is not found"}', last_response.body
+  end
+
+  def test_select_resource_when_api_key_is_provided
+    test_api_key = '94854565d7302caa441b4b422f75b709256278ddd391beedf6e3313dec8d7bf64ccc6c02198fc3bdd423e2be0502692f21e1d4d1bb4c242c195d1098b0629e544aba8cde'
+    ENV['RESHEET_API_KEY'] = test_api_key
+
+    header 'X-API-KEY', test_api_key
+    get '/animations'
+
+    assert last_response.ok?
+    assert_equal '[{"id":"1","title":"SHIROBAKO"}]', last_response.body
+  end
+
+  def test_error_when_api_key_is_not_provided
+    test_api_key = '94854565d7302caa441b4b422f75b709256278ddd391beedf6e3313dec8d7bf64ccc6c02198fc3bdd423e2be0502692f21e1d4d1bb4c242c195d1098b0629e544aba8cde'
+    ENV['RESHEET_API_KEY'] = test_api_key
+
+    get '/animations'
+
+    assert last_response.forbidden?
+    assert_empty last_response.body
   end
 end
